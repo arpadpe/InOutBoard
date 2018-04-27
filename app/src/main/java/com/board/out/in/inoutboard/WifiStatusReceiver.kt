@@ -13,7 +13,7 @@ class WifiStatusReceiver : BroadcastReceiver() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    var connected = false
+    private var connected = false
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null) return
@@ -26,26 +26,28 @@ class WifiStatusReceiver : BroadcastReceiver() {
             val ssid = wifiManager.connectionInfo.ssid.replace("\"", "")
 
             if (ssid == "eduroam") {
-                if (!connected) {
-                    connected = true
-                    fusedLocationClient.lastLocation.addOnSuccessListener {
-                        sendIntent(context, ViewData("Lat ${it.latitude} long ${it.longitude}", ssid, true))
-                    }
+                connected = true
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    sendIntent(context, ViewData("Lat ${it.latitude} long ${it.longitude}", ssid, true))
                 }
             } else {
-                if (connected) {
-                    connected = false
-                    val viewData = ViewData("Outside of school", "Unknown", false)
-                    sendIntent(context, viewData)
-                }
+                connected = false
+                val viewData = ViewData("Outside of school", "Unknown", false)
+                sendIntent(context, viewData)
             }
         }
     }
 
-    private fun sendIntent(context: Context, viewData: ViewData) {
-        val statusIntent = Intent("status")
-        statusIntent.putExtra("viewdata", viewData)
-        context.sendBroadcast(statusIntent)
+
+    companion object {
+        fun sendIntent(context: Context, viewData: ViewData) {
+            val statusIntent = Intent("status")
+            statusIntent.putExtra("viewdata", viewData)
+            context.sendBroadcast(statusIntent)
+        }
     }
 
 }
+
+
+
